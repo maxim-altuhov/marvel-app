@@ -7,22 +7,42 @@ import './charList.scss';
 
 class CharList extends Component {
   state = {
-    charList: {},
+    charList: [],
     loading: true,
     error: false,
+    newItemLoading: false,
+    offset: 120,
+    charEnded: false,
   };
 
   marvelService = new MarvelService();
 
-  updateCharList = () => {
-    this.marvelService.getAllCaracters().then(this.onCharListLoaded).catch(this.onError);
+  updateCharList = (offset) => {
+    this.onCharListLoading();
+    this.marvelService.getAllCaracters(offset).then(this.onCharListLoaded).catch(this.onError);
   };
 
-  onCharListLoaded = (charList) => {
+  componentDidMount() {
+    this.updateCharList();
+  }
+
+  onCharListLoading = () => {
     this.setState({
-      charList,
-      loading: false,
+      newItemLoading: true,
     });
+  };
+
+  onCharListLoaded = (newCharList) => {
+    let ended = false;
+    if (newCharList.length < 9) ended = true;
+
+    this.setState(({ charList, offset }) => ({
+      charList: [...charList, ...newCharList],
+      loading: false,
+      newItemLoading: false,
+      offset: offset + 9,
+      charEnded: ended,
+    }));
   };
 
   onError = () => {
@@ -32,12 +52,12 @@ class CharList extends Component {
     });
   };
 
-  componentDidMount() {
-    this.updateCharList();
-  }
+  onRequest = (offset) => {
+    this.updateCharList(offset);
+  };
 
   render() {
-    const { charList, loading, error } = this.state;
+    const { charList, loading, error, newItemLoading, offset, charEnded } = this.state;
     const errorMessage = error ? <ErrorMessage /> : null;
     const spinner = loading ? <Spinner /> : null;
     const content = !(loading || error) ? <View charList={charList} props={this.props} /> : null;
@@ -47,7 +67,12 @@ class CharList extends Component {
         {errorMessage}
         {spinner}
         {content}
-        <button className="button button__main button__long">
+        <button
+          className="button button__main button__long"
+          disabled={newItemLoading}
+          style={{ display: charEnded ? 'none' : '' }}
+          onClick={() => this.updateCharList(offset)}
+        >
           <div className="inner">load more</div>
         </button>
       </div>
