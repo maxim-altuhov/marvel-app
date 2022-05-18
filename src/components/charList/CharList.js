@@ -16,6 +16,8 @@ class CharList extends Component {
     charEnded: false,
   };
 
+  refArray = [];
+
   marvelService = new MarvelService();
 
   updateCharList = (offset) => {
@@ -57,11 +59,54 @@ class CharList extends Component {
     this.updateCharList(offset);
   };
 
+  setRef = (ref) => {
+    this.refArray.push(ref);
+  };
+
+  focusOnElem = (index) => {
+    this.refArray.forEach((elem) => elem.classList.remove('char__item_selected'));
+    this.refArray[index].classList.add('char__item_selected');
+    this.refArray[index].focus();
+  };
+
+  renderList = (charList) => {
+    const listСharacters = charList.map((elem, i) => {
+      const { name, thumbnail, id } = elem;
+      const noImgStyle = thumbnail.includes('image_not_available')
+        ? { objectPosition: 'top', objectFit: 'fill' }
+        : {};
+
+      return (
+        <li
+          className="char__item"
+          key={id}
+          tabIndex="0"
+          ref={this.setRef}
+          onClick={() => {
+            this.props.onCharSelected(id);
+            this.focusOnElem(i);
+          }}
+          onKeyPress={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              this.props.onCharSelected(id);
+              this.focusOnElem(i);
+            }
+          }}
+        >
+          <img src={thumbnail} alt={name} style={noImgStyle} />
+          <div className="char__name">{name}</div>
+        </li>
+      );
+    });
+
+    return <ul className="char__grid">{listСharacters}</ul>;
+  };
+
   render() {
     const { charList, loading, error, newItemLoading, offset, charEnded } = this.state;
     const errorMessage = error ? <ErrorMessage /> : null;
     const spinner = loading ? <Spinner /> : null;
-    const content = !(loading || error) ? <View charList={charList} props={this.props} /> : null;
+    const content = !(loading || error) ? this.renderList(charList) : null;
 
     return (
       <div className="char__list">
@@ -80,24 +125,6 @@ class CharList extends Component {
     );
   }
 }
-
-const View = ({ charList, props }) => {
-  const listСharacters = charList.map((elem) => {
-    const { name, thumbnail, id } = elem;
-    const noImgStyle = thumbnail.includes('image_not_available')
-      ? { objectPosition: 'top', objectFit: 'fill' }
-      : {};
-
-    return (
-      <li className="char__item" key={id} onClick={() => props.onCharSelected(id)}>
-        <img src={thumbnail} alt={name} style={noImgStyle} />
-        <div className="char__name">{name}</div>
-      </li>
-    );
-  });
-
-  return <ul className="char__grid">{listСharacters}</ul>;
-};
 
 CharList.propTypes = {
   onCharSelected: PropTypes.func.isRequired,
