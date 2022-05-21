@@ -3,47 +3,36 @@ import PropTypes from 'prop-types';
 
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 
 import './charList.scss';
 
 const CharList = (props) => {
+  const { loading, error, getAllCaracters, baseLimit, baseOffset } = useMarvelService();
+
   const [charList, setCharList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [newItemLoading, setNewItemLoading] = useState(false);
-  const [offset, setOffset] = useState(120);
+  const [offset, setOffset] = useState(baseOffset);
   const [charEnded, setCharEnded] = useState(false);
-  const marvelService = new MarvelService();
 
   useEffect(() => {
-    updateCharList();
+    onRequest(offset, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateCharList = (offset) => {
-    onCharListLoading();
-    marvelService.getAllCaracters(offset).then(onCharListLoaded).catch(onError);
-  };
-
-  const onCharListLoading = () => {
-    setNewItemLoading(true);
+  const onRequest = (offset, initial) => {
+    initial ? setNewItemLoading(false) : setNewItemLoading(true);
+    getAllCaracters(offset).then(onCharListLoaded);
   };
 
   const onCharListLoaded = (newCharList) => {
     let ended = false;
-    if (newCharList.length < 9) ended = true;
+    if (newCharList.length < baseLimit) ended = true;
 
     setCharList((charList) => [...charList, ...newCharList]);
-    setLoading(false);
     setNewItemLoading(false);
-    setOffset((offset) => offset + 9);
+    setOffset((offset) => offset + baseLimit);
     setCharEnded(ended);
-  };
-
-  const onError = () => {
-    setError(true);
-    setLoading(false);
   };
 
   const refArray = useRef([]);
@@ -87,20 +76,20 @@ const CharList = (props) => {
     return <ul className="char__grid">{listСharacters}</ul>;
   };
 
+  const items = renderList(charList);
   const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading ? <Spinner /> : null;
-  const content = !(loading || error) ? renderList(charList) : null;
+  const spinner = loading && !newItemLoading ? <Spinner /> : null;
 
   return (
     <div className="char__list">
       {errorMessage}
       {spinner}
-      {content}
+      {items}
       <button
         className="button button__main button__long"
         disabled={newItemLoading}
         style={{ display: charEnded ? 'none' : '' }}
-        onClick={() => updateCharList(offset)}
+        onClick={() => onRequest(offset)}
       >
         <div className="inner">load more</div>
       </button>
