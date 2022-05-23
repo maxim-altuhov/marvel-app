@@ -28,4 +28,8 @@
             }
         }
     }
+
+    &__menu-link_active {
+        color: $main-color;
+    }
 }
