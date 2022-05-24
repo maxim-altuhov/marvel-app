@@ -25,7 +25,6 @@ const AppHeader = () => {
           /
           <li>
             <NavLink
-              end
               to="/comics"
               className={({ isActive }) =>
                 'app__menu-link' + (isActive ? ' app__menu-link_active' : '')

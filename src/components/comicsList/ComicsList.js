@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
 import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -29,23 +31,23 @@ const ComicsList = () => {
       ended = true;
     }
 
-    setComicsList((comicsList) => [...comicsList, ...newComicsList]);
+    setComicsList([...comicsList, ...newComicsList]);
     setNewComicsLoading(false);
-    setOffset((offset) => offset + baseLimitForComics);
+    setOffset(offset + baseLimitForComics);
     setComicsEnded(ended);
   };
 
   const renderComicsList = (comicsList) => {
-    const listWithComics = comicsList.map((comics) => {
+    const listWithComics = comicsList.map((comics, i) => {
       const { title, thumbnail, id, price } = comics;
 
       return (
-        <li className="comics__item" key={id}>
-          <a href="#test">
+        <li className="comics__item" key={i}>
+          <Link to={`/comics/${id}`}>
             <img src={thumbnail} alt={title} className="comics__item-img" />
             <div className="comics__item-name">{title}</div>
             <div className="comics__item-price">{price}</div>
-          </a>
+          </Link>
         </li>
       );
     });

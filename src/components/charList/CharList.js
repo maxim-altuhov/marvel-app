@@ -29,9 +29,9 @@ const CharList = (props) => {
     let ended = false;
     if (newCharList.length < baseLimit) ended = true;
 
-    setCharList((charList) => [...charList, ...newCharList]);
+    setCharList([...charList, ...newCharList]);
     setNewItemLoading(false);
-    setOffset((offset) => offset + baseLimit);
+    setOffset(offset + baseLimit);
     setCharEnded(ended);
   };
 

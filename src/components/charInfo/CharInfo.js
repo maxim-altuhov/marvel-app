@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
 import Skeleton from '../skeleton/Skeleton';
@@ -55,9 +56,15 @@ const View = ({ char }) => {
   for (let i = 0; i < comics.length; i++) {
     if (i >= maxComics) break;
 
+    const comicsID = comics[i].resourceURI.match(/\d{2,}/g)[0];
+
     comicsList.push(
       <li key={i} className="char__comics-item">
-        {comics[i].name}
+        {comicsID ? (
+          <Link to={`/comics/${comicsID}`}>{comics[i].name}</Link>
+        ) : (
+          <span>{comics[i].name}</span>
+        )}
       </li>,
     );
   }
