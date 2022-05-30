@@ -1,15 +1,30 @@
-import { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import PropTypes from 'prop-types';
 
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
-import useMarvelService from '../../services/MarvelService';
 
 import './charList.scss';
 
+const setContent = (process, Component, newItemLoading) => {
+  switch (process) {
+    case 'waiting':
+      return <Spinner />;
+    case 'loading':
+      return newItemLoading ? <Component /> : <Spinner />;
+    case 'confirmed':
+      return <Component />;
+    case 'error':
+      return <ErrorMessage />;
+    default:
+      throw new Error('Unexpected process state');
+  }
+};
+
 const CharList = (props) => {
-  const { loading, error, getAllCharacters, baseLimit, baseOffset } = useMarvelService();
+  const { process, setProcess, getAllCharacters, baseLimit, baseOffset } = useMarvelService();
 
   const [charList, setCharList] = useState([]);
   const [newItemLoading, setNewItemLoading] = useState(false);
@@ -23,10 +38,12 @@ const CharList = (props) => {
 
   const onRequest = (offset, initial) => {
     initial ? setNewItemLoading(false) : setNewItemLoading(true);
-    getAllCharacters(offset).then(onCharListLoaded);
+    getAllCharacters(offset)
+      .then(onCharListLoaded)
+      .then(() => setProcess('confirmed'));
   };
 
-  const onCharListLoaded = (newCharList) => {
+  const onCharListLoaded = async (newCharList) => {
     let ended = false;
     if (newCharList.length < baseLimit) ended = true;
 
@@ -82,19 +99,18 @@ const CharList = (props) => {
     );
   };
 
-  const items = renderList(charList);
-  const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading && !newItemLoading ? <Spinner /> : null;
+  const elements = useMemo(() => {
+    return setContent(process, () => renderList(charList), newItemLoading);
+    // eslint-disable-next-line
+  }, [process]);
 
   return (
     <div className="char__list">
-      {errorMessage}
-      {spinner}
-      {items}
+      {elements}
       <button
-        className="button button__main button__long"
         disabled={newItemLoading}
-        style={{ display: charEnded ? 'none' : '' }}
+        style={{ display: charEnded ? 'none' : 'block' }}
+        className="button button__main button__long"
         onClick={() => onRequest(offset)}
       >
         <div className="inner">load more</div>

@@ -4,13 +4,13 @@ import { Formik, Form, Field, ErrorMessage as FormikErrorMessage } from 'formik'
 import { object, string } from 'yup';
 
 import useMarvelService from '../../services/MarvelService';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import setContent from '../../utils/setContent';
 
 import './charSearch.scss';
 
 const CharSearch = () => {
   const [char, setChar] = useState(null);
-  const { loading, error, getCharacterByName, clearError } = useMarvelService();
+  const { process, setProcess, getCharacterByName, clearError } = useMarvelService();
 
   const onCharLoaded = (char) => {
     setChar(char);
@@ -19,14 +19,15 @@ const CharSearch = () => {
   const updateChar = (charName) => {
     clearError();
 
-    getCharacterByName(charName).then(onCharLoaded);
+    getCharacterByName(charName)
+      .then(onCharLoaded)
+      .then(() => setProcess('confirmed'));
   };
 
-  const errorMessage = error ? (
-    <div className="char__search-critical-error">
-      <ErrorMessage />
-    </div>
-  ) : null;
+  const errorMessage =
+    process === 'error' ? (
+      <div className="char__search-critical-error">{setContent('error')}</div>
+    ) : null;
   const results = !char ? null : char.length > 0 ? (
     <div className="char__search-wrapper">
       <div className="char__search-success">There is! Visit {char[0].name} page?</div>
@@ -55,7 +56,7 @@ const CharSearch = () => {
           </label>
           <div className="char__search-wrapper">
             <Field id="charName" name="charName" type="text" placeholder="Enter name" />
-            <button type="submit" className="button button__main" disabled={loading}>
+            <button type="submit" className="button button__main" disabled={process === 'loading'}>
               <div className="inner">find</div>
             </button>
           </div>
