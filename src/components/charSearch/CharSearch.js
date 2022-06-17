@@ -57,7 +57,7 @@ const CharSearch = () => {
           <div className="char__search-wrapper">
             <Field id="charName" name="charName" type="text" placeholder="Enter name" />
             <button type="submit" className="button button__main" disabled={process === 'loading'}>
-              <div className="inner">find</div>
+              <div className="inner">{process === 'loading' ? 'searching...' : 'Find'}</div>
             </button>
           </div>
           <FormikErrorMessage component="div" className="char__search-error" name="charName" />

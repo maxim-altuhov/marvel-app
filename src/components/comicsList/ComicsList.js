@@ -81,7 +81,7 @@ const ComicsList = () => {
         disabled={newComicsLoading}
         style={{ display: comicsEnded ? 'none' : 'block' }}
       >
-        <div className="inner">load more</div>
+        <div className="inner">{newComicsLoading ? 'loading...' : 'load more'}</div>
       </button>
     </div>
   );
